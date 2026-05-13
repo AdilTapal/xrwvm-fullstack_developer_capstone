@@ -25,18 +25,30 @@ logger = logging.getLogger(__name__)
 # Create a `login_request` view to handle sign in request
 @csrf_exempt
 def login_user(request):
-    # Get username and password from request.POST dictionary
-    data = json.loads(request.body)
-    username = data['userName']
-    password = data['password']
-    # Try to check if provide credential can be authenticated
-    user = authenticate(username=username, password=password)
-    data = {"userName": username}
-    if user is not None:
-        # If user is valid, call login method to login current user
-        login(request, user)
-        data = {"userName": username, "status": "Authenticated"}
-    return JsonResponse(data)
+    if request.method != 'POST':
+        return JsonResponse({"status": "error", "message": "POST method required"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('userName')
+        password = data.get('password')
+        
+        if not username or not password:
+            return JsonResponse({"status": "error", "message": "Username and password are required"}, status=400)
+        
+        # Try to check if provided credentials can be authenticated
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # If user is valid, call login method to login current user
+            login(request, user)
+            return JsonResponse({"userName": username, "status": "Authenticated"})
+        else:
+            return JsonResponse({"status": "error", "message": "Invalid credentials"}, status=401)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        return JsonResponse({"status": "error", "message": "An error occurred during login"}, status=500)
 
 # Create a `logout_request` view to handle sign out request
 @csrf_exempt
@@ -48,9 +60,64 @@ def logout_request(request):
 
 
 # Create a `registration` view to handle sign up request
-# @csrf_exempt
-# def registration(request):
-# ...
+@csrf_exempt
+def registration(request):
+    if request.method != 'POST':
+        return JsonResponse({"status": "error", "message": "POST method required"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('userName', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        
+        # Validate input
+        if not username or not email or not password:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Username, email, and password are required"
+            }, status=400)
+        
+        # Validate email format
+        if '@' not in email or '.' not in email.split('@')[-1]:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid email format"
+            }, status=400)
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                "userName": username,
+                "status": "User already exists"
+            }, status=400)
+        
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({
+                "status": "error",
+                "message": "Email already registered"
+            }, status=400)
+        
+        # Create user in auth_user table
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        
+        # Login the user
+        login(request, user)
+        logger.debug(f"User {username} registered successfully")
+        
+        return JsonResponse({
+            "userName": username,
+            "status": "User Registered"
+        }, status=201)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        return JsonResponse({"status": "error", "message": "An error occurred during registration"}, status=500)
+
 
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
