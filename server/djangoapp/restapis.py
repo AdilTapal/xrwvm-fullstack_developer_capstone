@@ -8,15 +8,15 @@ load_dotenv()
 
 def _env_or_default(name, default_value):
     value = os.getenv(name, default_value)
-    if not value or not value.startswith(('http://', 'https://')):
+    if not value or not value.startswith(("http://", "https://")):
         return default_value
     return value
 
 
-backend_url = _env_or_default(
-    'backend_url', "http://localhost:3030")
+backend_url = _env_or_default("backend_url", "http://localhost:3030")
 sentiment_analyzer_url = _env_or_default(
-    'sentiment_analyzer_url', "http://localhost:5050/")
+    "sentiment_analyzer_url", "http://localhost:5050/"
+)
 
 
 def get_request(endpoint, **kwargs):
@@ -43,9 +43,11 @@ def analyze_review_sentiments(text):
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
         print("Network exception occurred")
+
+
 # Add code for posting review
 def post_review(data_dict):
-    request_url = backend_url+"/insert_review"
+    request_url = backend_url + "/insert_review"
     try:
         # Call post method of requests library with URL and parameters
         response = requests.post(request_url, json=data_dict)
