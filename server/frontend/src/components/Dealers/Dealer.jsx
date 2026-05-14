@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import "./Dealers.css";
 import "../assets/style.css";
 import positive_icon from "../assets/positive.png"
@@ -16,13 +16,10 @@ const Dealer = () => {
   const [unreviewed, setUnreviewed] = useState(false);
   const [postReview, setPostReview] = useState(<></>)
 
-  let curr_url = window.location.href;
-  let root_url = curr_url.substring(0,curr_url.indexOf("dealer"));
   let params = useParams();
-  let id =params.id;
-  let dealer_url = root_url+`djangoapp/dealer/${id}`;
-  let reviews_url = root_url+`djangoapp/reviews/dealer/${id}`;
-  let post_review = root_url+`post-review/${id}/`;
+  let id = params.id;
+  let dealer_url = `http://127.0.0.1:8000/djangoapp/dealer/${id}`;
+  let reviews_url = `http://127.0.0.1:8000/djangoapp/reviews/dealer/${id}`;
   
   const get_dealer = async ()=>{
     const res = await fetch(dealer_url, {
@@ -60,11 +57,9 @@ const Dealer = () => {
     get_dealer();
     get_reviews();
     if(sessionStorage.getItem("username")) {
-      setPostReview(<a href={post_review}><img src={review_icon} style={{width:'10%',marginLeft:'10px',marginTop:'10px'}} alt='Post Review'/></a>)
-
-      
+      setPostReview(<Link to={`/post-review/${id}`}><img src={review_icon} style={{width:'10%',marginLeft:'10px',marginTop:'10px'}} alt='Post Review'/></Link>)
     }
-  },[]);  
+  },[id]);  
 
 
 return(
