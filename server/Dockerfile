@@ -9,12 +9,12 @@ ENV APP=/app
 WORKDIR $APP
 
 # Install the requirements
-COPY requirements.txt $APP
+COPY server/requirements.txt $APP
 
 RUN pip3 install -r requirements.txt
 
 # Copy the rest of the files
-COPY . $APP
+COPY server/ $APP
 
 EXPOSE 8000
 

@@ -11,22 +11,18 @@ app.use(require('body-parser').urlencoded({ extended: false }));
 const reviews_data = JSON.parse(fs.readFileSync("reviews.json", 'utf8'));
 const dealerships_data = JSON.parse(fs.readFileSync("dealerships.json", 'utf8'));
 
-mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
-
-
 const Reviews = require('./review');
 
 const Dealerships = require('./dealership');
 
-try {
-  Reviews.deleteMany({}).then(()=>{
-    Reviews.insertMany(reviews_data.reviews);
-  });
-  Dealerships.deleteMany({}).then(()=>{
-    Dealerships.insertMany(dealerships_data.dealerships);
-  });
-} catch (error) {
-  console.error('Error initializing database:', error);
+async function initializeDatabase() {
+  await mongoose.connect("mongodb://mongo-db:27017/", { dbName: 'dealershipsDB' });
+
+  await Reviews.deleteMany({});
+  await Reviews.insertMany(reviews_data.reviews);
+
+  await Dealerships.deleteMany({});
+  await Dealerships.insertMany(dealerships_data.dealerships);
 }
 
 
@@ -113,6 +109,13 @@ app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
 });
 
 // Start the Express server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+initializeDatabase()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server is running on http://localhost:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error initializing database:', error);
+    process.exit(1);
+  });

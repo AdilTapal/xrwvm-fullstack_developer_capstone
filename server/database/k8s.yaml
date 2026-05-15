@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-db
+  labels:
+    app: mongo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-db
+  template:
+    metadata:
+      labels:
+        app: mongo-db
+    spec:
+      containers:
+        - name: mongo-db
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-db
+  labels:
+    app: mongo-db
+spec:
+  selector:
+    app: mongo-db
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-api
+  labels:
+    app: database-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database-api
+  template:
+    metadata:
+      labels:
+        app: database-api
+    spec:
+      containers:
+        - name: database-api
+          image: us.icr.io/sn-labs-atapal/database-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3030
+          env:
+            - name: NODE_ENV
+              value: production
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-api
+  labels:
+    app: database-api
+spec:
+  selector:
+    app: database-api
+  ports:
+    - port: 3030
+      targetPort: 3030
+      protocol: TCP
+  type: ClusterIP
