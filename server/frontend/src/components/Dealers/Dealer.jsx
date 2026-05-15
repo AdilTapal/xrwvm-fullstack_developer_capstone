@@ -18,8 +18,8 @@ const Dealer = () => {
 
   let params = useParams();
   let id = params.id;
-  let dealer_url = `http://127.0.0.1:8000/djangoapp/dealer/${id}`;
-  let reviews_url = `http://127.0.0.1:8000/djangoapp/reviews/dealer/${id}`;
+  let dealer_url = `/djangoapp/dealer/${id}`;
+  let reviews_url = `/djangoapp/reviews/dealer/${id}`;
   
   const get_dealer = async ()=>{
     const res = await fetch(dealer_url, {
