@@ -180,7 +180,7 @@ def get_dealer_details(request, dealer_id):
 
 
 @csrf_exempt
-def add_review(request):
+def post_review(request):
     if request.method != "POST":
         msg = "POST method required"
         return JsonResponse({"status": "error", "message": msg}, status=405)

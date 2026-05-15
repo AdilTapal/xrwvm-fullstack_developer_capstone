@@ -1,0 +1,13 @@
+{
+  "esversion": 8,
+  "node": true,
+  "strict": false,
+  "asi": true,
+  "latedef": false,
+  "undef": true,
+  "unused": true,
+  "boss": true,
+  "eqeqeq": true,
+  "immed": true,
+  "laxbreak": true
+}
